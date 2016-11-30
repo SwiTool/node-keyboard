@@ -60,18 +60,42 @@ Keyboard.prototype.close = function(callback) {
 };
 
 Keyboard.prototype.Lines = function(callback) {
-  var line = [];
-  var endLine = function () {
-    callback(toLine(line));
-    line = [];
-  }
-  this.on('keypress', function(data){
-    if(!data || !data['key']) return;
-    if (data['key']['code']==28)
-      return endLine();
-    else
-      line.push(data);
-  });
+	var line = [];
+	var endLine = function () {
+		callback(toLine(line));
+		line = [];
+	};
+	this.on('keypress', function(data){
+		if(!data || !data['key']) return;
+		if (data['key']['code']==28)
+			return endLine();
+		else
+			line.push(data);
+	});
+};
+
+/*
+	returns the input when no more data has been received in 100ms
+ */
+
+Keyboard.prototype.data = function(callback) {
+	var timeout = 0;
+	var line = [];
+	var endLine = function () {
+		callback(toLine(line));
+		line = [];
+	};
+	this.on('keypress', function(data){
+		if(!data || !data['key']) return;
+		if (timeout) {
+			clearTimeout(timeout);
+			timeout = 0;
+		}
+		line.push(data);
+		timeout = setTimeout(function() {
+			return endLine();
+		}, 100);
+	});
 };
 
 
